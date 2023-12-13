@@ -29,6 +29,9 @@ inputs:
   DIRECTORY: 
     description: 'Directory to run Terraform in'
     required: true
+  WORKING_DIRECTORY: 
+    description: 'Working Directory'
+    required: true
 
 runs:
   using: "composite"
@@ -38,6 +41,7 @@ runs:
       terraform_version: ${{ inputs.TERRAFORM_VERSION}}
 
   - id: init
+    working-directory: ${{ inputs.working-directory }} 
     run: |
       terraform -chdir=${{ inputs.directory }} init
       terraform -chdir=${{ inputs.directory }} validate -no-color
@@ -50,6 +54,7 @@ runs:
     shell: bash
 
   - id: plan
+    working-directory: ${{ inputs.working-directory }} 
     continue-on-error: true
     env:
       TERRAFORM_VERSION: ${{ inputs.TERRAFORM_VERSION }}
