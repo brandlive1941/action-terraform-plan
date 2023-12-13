@@ -40,6 +40,7 @@ runs:
       else
         echo "folder_exists=false" >> $GITHUB_OUTPUT
       fi
+    shell: bash
 
   - uses: hashicorp/setup-terraform@v3
     if: steps.check_folder.outputs.folder_exists == 'true'
@@ -50,15 +51,18 @@ runs:
     run: |
       terraform -chdir=${{ inputs.directory }} init
       terraform -chdir=${{ inputs.directory }} validate -no-color
+    shell: bash
 
   - if: steps.check_folder.outputs.folder_exists == 'true'
     id: lint
     run: |
       terraform -chdir=${{ inputs.directory }} fmt -check -diff -recursive .
+    shell: bash
 
   - if: steps.lint.outcome == 'failure' && steps.check_folder.outputs.folder_exists == 'true'
     run: |
       exit 1
+    shell: bash
 
   - id: plan
     if: steps.check_folder.outputs.folder_exists == 'true'
@@ -67,15 +71,18 @@ runs:
       cd ${{ inputs.directory }} && \
       terraform plan -input=false -no-color -out=tfplan && \
       terraform show -no-color tfplan
+    shell: bash
 
   - if: steps.plan.outcome == 'failure' && steps.check_folder.outputs.folder_exists == 'true'
     run: |
       exit 1
+    shell: bash
 
   - if: steps.check_folder.outputs.folder_exists == 'true'
     run: |
       echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
       | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > plan.txt
+    shell: bash
 
   - if: steps.check_folder.outputs.folder_exists == 'true'
     run: |
@@ -83,6 +90,7 @@ runs:
       echo "PLAN<<EOF" >> $GITHUB_ENV
       echo "$PLAN" >> $GITHUB_ENV
       echo "EOF" >> $GITHUB_ENV
+    shell: bash
 
   - uses: mshick/add-pr-comment@v1
     if: steps.check_folder.outputs.folder_exists == 'true'
