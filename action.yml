@@ -2,6 +2,9 @@ name: 'Terraform Actions Collection'
 description: 'Run actions for Terraform Project'
 author: 'drew.mercer'
 inputs:
+  ACTION:
+    description: 'Action to run'
+    required: true
   TERRAFORM_VERSION:
     description: 'Terraform Version'
     required: true
@@ -56,6 +59,7 @@ runs:
 
   - id: plan
     working-directory: ${{ inputs.working-directory }} 
+    if: inputs.ACTION == 'plan'
     continue-on-error: true
     env:
       TERRAFORM_VERSION: ${{ inputs.TERRAFORM_VERSION }}
@@ -72,18 +76,18 @@ runs:
       terraform show -no-color tfplan
     shell: bash
 
-  - if: steps.plan.outcome == 'failure' && steps.check_folder.outputs.folder_exists == 'true'
+  - if: steps.plan.outcome == 'failure' && inputs.ACTION == 'plan'
     run: |
       exit 1
     shell: bash
 
-  - if: steps.check_folder.outputs.folder_exists == 'true'
+  - if: inputs.ACTION == 'plan'
     run: |
       echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
       | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > plan.txt
     shell: bash
 
-  - if: steps.check_folder.outputs.folder_exists == 'true'
+  - if: inputs.ACTION == 'plan'
     run: |
       PLAN=$(cat plan.txt)
       echo "PLAN<<EOF" >> $GITHUB_ENV
@@ -92,7 +96,7 @@ runs:
     shell: bash
 
   - uses: mshick/add-pr-comment@v1
-    if: steps.check_folder.outputs.folder_exists == 'true'
+    if: inputs.ACTION == 'plan'
     with:
       allow-repeats: true
       repo-token: ${{ inputs.GITHUB_TOKEN }}
