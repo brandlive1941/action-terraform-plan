@@ -1,0 +1,97 @@
+name: 'Terraform Actions Collection'
+description: 'Run actions for Terraform Project'
+author: 'drew.mercer'
+inputs:
+  TERRAFORM_VERSION:
+    description: 'Terraform Version'
+    required: true
+  TF_VAR_PROJECT_ID: 
+    description: 'Project ID'
+    required: true
+  TF_VAR_GITHUB_TOKEN: 
+    description: 'Github Token'
+    required: true
+  TF_VAR_NPM_TOKEN: 
+    description: 'NPM Token'
+    required: true
+  TF_VAR_GITHUB_APP_CLOUDBUILD_INSTALLATION_ID: 
+    description: 'Github App Cloud Build Installation ID'
+    required: true
+  TF_VAR_CLOUDFLARE_API_TOKEN: 
+    description: 'Cloudflare API Token'
+    required: true
+  TF_VAR_DATADOG_API_KEY: 
+    description: 'Datadog API Key'
+    required: true
+  TF_VAR_DATADOG_APP_KEY: 
+    description: 'Datadog App Key'
+    required: true
+  DIRECTORY: 
+    description: 'Directory to run Terraform in'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+  - id: check_folder
+    run: |
+      if [ -d "${{ inputs.directory }}" ]; then
+        echo "folder_exists=true" >> $GITHUB_OUTPUT
+      else
+        echo "folder_exists=false" >> $GITHUB_OUTPUT
+      fi
+
+  - uses: hashicorp/setup-terraform@v3
+    if: steps.check_folder.outputs.folder_exists == 'true'
+    with:
+      terraform_version: ${{ inputs.TERRAFORM_VERSION}}
+
+  - if: steps.check_folder.outputs.folder_exists == 'true'
+    run: |
+      terraform -chdir=${{ inputs.directory }} init
+      terraform -chdir=${{ inputs.directory }} validate -no-color
+
+  - if: steps.check_folder.outputs.folder_exists == 'true'
+    id: lint
+    run: |
+      terraform -chdir=${{ inputs.directory }} fmt -check -diff -recursive .
+
+  - if: steps.lint.outcome == 'failure' && steps.check_folder.outputs.folder_exists == 'true'
+    run: |
+      exit 1
+
+  - id: plan
+    if: steps.check_folder.outputs.folder_exists == 'true'
+    continue-on-error: true
+    run: |
+      cd ${{ inputs.directory }} && \
+      terraform plan -input=false -no-color -out=tfplan && \
+      terraform show -no-color tfplan
+
+  - if: steps.plan.outcome == 'failure' && steps.check_folder.outputs.folder_exists == 'true'
+    run: |
+      exit 1
+
+  - if: steps.check_folder.outputs.folder_exists == 'true'
+    run: |
+      echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
+      | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > plan.txt
+
+  - if: steps.check_folder.outputs.folder_exists == 'true'
+    run: |
+      PLAN=$(cat plan.txt)
+      echo "PLAN<<EOF" >> $GITHUB_ENV
+      echo "$PLAN" >> $GITHUB_ENV
+      echo "EOF" >> $GITHUB_ENV
+
+  - uses: mshick/add-pr-comment@v1
+    if: steps.check_folder.outputs.folder_exists == 'true'
+    with:
+      allow-repeats: true
+      repo-token: ${{ inputs.TF_VAR_GITHUB_TOKEN }}
+      repo-token-user-login: 'github-actions[bot]'
+      message: |
+        ## ${{ inputs.directory }} plan
+        ```diff
+        ${{ env.PLAN }}
+        ```
