@@ -81,7 +81,7 @@ runs:
     shell: bash
 
   - run: |
-      PLAN=$(plan.txt)
+      PLAN=$(cat plan.txt)
       echo "PLAN<<EOF" >> $GITHUB_ENV
       echo "$PLAN" >> $GITHUB_ENV
       echo "EOF" >> $GITHUB_ENV
