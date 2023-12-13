@@ -5,25 +5,25 @@ inputs:
   TERRAFORM_VERSION:
     description: 'Terraform Version'
     required: true
-  TF_VAR_PROJECT_ID: 
+  PROJECT_ID: 
     description: 'Project ID'
     required: true
-  TF_VAR_GITHUB_TOKEN: 
+  GITHUB_TOKEN: 
     description: 'Github Token'
     required: true
-  TF_VAR_NPM_TOKEN: 
+  NPM_TOKEN: 
     description: 'NPM Token'
     required: true
-  TF_VAR_GITHUB_APP_CLOUDBUILD_INSTALLATION_ID: 
+  GITHUB_APP_CLOUDBUILD_INSTALLATION_ID: 
     description: 'Github App Cloud Build Installation ID'
     required: true
-  TF_VAR_CLOUDFLARE_API_TOKEN: 
+  CLOUDFLARE_API_TOKEN: 
     description: 'Cloudflare API Token'
     required: true
-  TF_VAR_DATADOG_API_KEY: 
+  DATADOG_API_KEY: 
     description: 'Datadog API Key'
     required: true
-  TF_VAR_DATADOG_APP_KEY: 
+  DATADOG_APP_KEY: 
     description: 'Datadog App Key'
     required: true
   DIRECTORY: 
@@ -33,40 +33,33 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - id: check_folder
-    run: |
-      if [ -d "${{ inputs.directory }}" ]; then
-        echo "folder_exists=true" >> $GITHUB_OUTPUT
-      else
-        echo "folder_exists=false" >> $GITHUB_OUTPUT
-      fi
-    shell: bash
-
   - uses: hashicorp/setup-terraform@v3
-    if: steps.check_folder.outputs.folder_exists == 'true'
     with:
       terraform_version: ${{ inputs.TERRAFORM_VERSION}}
 
-  - if: steps.check_folder.outputs.folder_exists == 'true'
+  - id: init
     run: |
       terraform -chdir=${{ inputs.directory }} init
       terraform -chdir=${{ inputs.directory }} validate -no-color
-    shell: bash
-
-  - if: steps.check_folder.outputs.folder_exists == 'true'
-    id: lint
-    run: |
       terraform -chdir=${{ inputs.directory }} fmt -check -diff -recursive .
     shell: bash
 
-  - if: steps.lint.outcome == 'failure' && steps.check_folder.outputs.folder_exists == 'true'
+  - if: steps.init.outcome == 'failure' 
     run: |
       exit 1
     shell: bash
 
   - id: plan
-    if: steps.check_folder.outputs.folder_exists == 'true'
     continue-on-error: true
+    env:
+      TERRAFORM_VERSION: ${{ inputs.TERRAFORM_VERSION }}
+      TF_VAR_PROJECT_ID: ${{ inputs.PROJECT_ID }}
+      TF_VAR_GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+      TF_VAR_NPM_TOKEN: ${{ inputs.NPM_TOKEN }}
+      TF_VAR_GITHUB_APP_CLOUDBUILD_INSTALLATION_ID: ${{ inputs.GITHUB_APP_CLOUDBUILD_INSTALLATION_ID }}
+      TF_VAR_CLOUDFLARE_API_TOKEN: ${{ inputs.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_DATADOG_API_KEY: ${{ inputs.DATADOG_API_KEY }}
+      TF_VAR_DATADOG_APP_KEY: ${{ inputs.DATADOG_APP_KEY }}
     run: |
       cd ${{ inputs.directory }} && \
       terraform plan -input=false -no-color -out=tfplan && \
@@ -96,7 +89,7 @@ runs:
     if: steps.check_folder.outputs.folder_exists == 'true'
     with:
       allow-repeats: true
-      repo-token: ${{ inputs.TF_VAR_GITHUB_TOKEN }}
+      repo-token: ${{ inputs.GITHUB_TOKEN }}
       repo-token-user-login: 'github-actions[bot]'
       message: |
         ## ${{ inputs.directory }} plan
