@@ -32,9 +32,6 @@ inputs:
   DIRECTORY: 
     description: 'Directory to run Terraform in'
     required: true
-  WORKING_DIRECTORY: 
-    description: 'Working Directory'
-    required: true
 
 runs:
   using: "composite"
@@ -44,9 +41,7 @@ runs:
       terraform_version: ${{ inputs.TERRAFORM_VERSION}}
 
   - id: init
-    working-directory: ${{ inputs.working-directory }} 
     run: |
-      ls -al
       terraform -chdir=${{ inputs.directory }} init
       terraform -chdir=${{ inputs.directory }} validate -no-color
       terraform -chdir=${{ inputs.directory }} fmt -check -diff -recursive .
@@ -58,7 +53,6 @@ runs:
     shell: bash
 
   - id: plan
-    working-directory: ${{ inputs.working-directory }} 
     if: inputs.ACTION == 'plan'
     continue-on-error: true
     env:
@@ -81,14 +75,12 @@ runs:
       exit 1
     shell: bash
 
-  - if: inputs.ACTION == 'plan'
-    run: |
+  - run: |
       echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
       | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > plan.txt
     shell: bash
 
-  - if: inputs.ACTION == 'plan'
-    run: |
+  - run: |
       PLAN=$(cat plan.txt)
       echo "PLAN<<EOF" >> $GITHUB_ENV
       echo "$PLAN" >> $GITHUB_ENV
@@ -106,3 +98,55 @@ runs:
         ```diff
         ${{ env.PLAN }}
         ```
+
+  - id: apply
+    if: inputs.ACTION == 'apply'
+    continue-on-error: true
+    run: |
+      terraform -chdir=${{ inputs.directory }} apply \
+        -input=false \
+        -no-color \
+        tfplan
+
+  - id: post plan
+    if: steps.plan.outcome == 'success' && steps.apply.outcome == 'success'
+    uses: mshick/add-pr-comment@v1
+    with:
+      repo-token: ${{ inputs.GITHUB_TOKEN }}
+      repo-token-user-login: 'github-actions[bot]'
+      message: |
+        Applying **${{ inputs.directory }}**:
+
+        ```diff
+        ${{ env.PLAN }}
+        ```
+
+        ```
+        ${{ steps.apply.outputs.stdout }}
+        ```
+
+  - if: steps.plan.outcome == 'failure' && inputs.ACTION == 'apply'
+    uses: mshick/add-pr-comment@v1
+    with:
+      repo-token: ${{ inputs.GITHUB_TOKEN }}
+      repo-token-user-login: 'github-actions[bot]'
+      message: |
+        Plan failed for **${{ inputs.directory }}**:
+
+        ```
+        ${{ steps.plan.outputs.stderr }}
+        ```
+      run: exit 1
+
+  - if: steps.apply.outcome == 'failure' 
+    uses: mshick/add-pr-comment@v1
+    with:
+      repo-token: ${{ inputs.GITHUB_TOKEN }}
+      repo-token-user-login: 'github-actions[bot]'
+      message: |
+        Apply failed for **${{ inputs.directory }}**:
+
+        ```
+        ${{ steps.apply.outputs.stderr }}
+        ```
+      run: exit 1
