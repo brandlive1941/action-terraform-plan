@@ -107,8 +107,9 @@ runs:
         -input=false \
         -no-color \
         tfplan
+    shell: bash
 
-  - id: post plan
+  - id: post_plan
     if: steps.plan.outcome == 'success' && steps.apply.outcome == 'success'
     uses: mshick/add-pr-comment@v1
     with:
@@ -137,6 +138,7 @@ runs:
         ${{ steps.plan.outputs.stderr }}
         ```
       run: exit 1
+      shell: bash
 
   - if: steps.apply.outcome == 'failure' 
     uses: mshick/add-pr-comment@v1
@@ -150,3 +152,4 @@ runs:
         ${{ steps.apply.outputs.stderr }}
         ```
       run: exit 1
+      shell: bash
