@@ -90,7 +90,7 @@ runs:
       echo "EOF" >> $GITHUB_ENV
     shell: bash
 
-  - uses: peter-evans/create-or-update-comment@v3
+  - uses: peter-evans/create-or-update-comment@v2
     id: post_plan
     if: inputs.ACTION == 'plan'
     with:
@@ -112,7 +112,7 @@ runs:
         tfplan
     shell: bash
 
-  - uses: peter-evans/create-or-update-comment@v3
+  - uses: peter-evans/create-or-update-comment@v2
     id: post_apply
     if: inputs.ACTION == 'apply'
     with:
@@ -125,7 +125,7 @@ runs:
           ${{ steps.apply.outputs.stdout }}
           ```
 
-  - uses: peter-evans/create-or-update-comment@v3
+  - uses: peter-evans/create-or-update-comment@v2
     id: post_plan_failure
     if: steps.plan.outcome == 'failure' && inputs.ACTION == 'apply'
     with:
@@ -137,7 +137,7 @@ runs:
         ${{ steps.plan.outputs.stderr }}
         ```   
 
-  - uses: peter-evans/create-or-update-comment@v3
+  - uses: peter-evans/create-or-update-comment@v2
     id: post_apply_failure
     if: steps.apply.outcome == 'failure' 
     with:
