@@ -98,6 +98,7 @@ runs:
         ```diff
         ${{ env.PLAN }}
         ```
+      shell: bash
 
   - id: apply
     if: inputs.ACTION == 'apply'
