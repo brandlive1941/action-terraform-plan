@@ -5,6 +5,9 @@ inputs:
   ACTION:
     description: 'Action to run'
     required: true
+  ISSUE_NUMBER:
+    description: 'Issue Number'
+    required: true
   TERRAFORM_VERSION:
     description: 'Terraform Version'
     required: true
@@ -87,18 +90,17 @@ runs:
       echo "EOF" >> $GITHUB_ENV
     shell: bash
 
-  - uses: mshick/add-pr-comment@v2
+  - id: post_plan
+    uses: peter-evans/create-or-update-comment@v2
     if: inputs.ACTION == 'plan'
     with:
-      allow-repeats: true
-      repo-token: ${{ inputs.GITHUB_TOKEN }}
-      repo-token-user-login: 'github-actions[bot]'
-      message: |
-        ## ${{ inputs.directory }} plan
+      token: ${{ inputs.GITHUB_TOKEN }}
+      issue-number: ${{ inputs.ISSUE_NUMBER }}
+      body: |
+        Plan: **${{ inputs.directory }}**:
         ```diff
         ${{ env.PLAN }}
         ```
-      shell: bash
 
   - id: apply
     if: inputs.ACTION == 'apply'
@@ -110,44 +112,37 @@ runs:
         tfplan
     shell: bash
 
-  - id: post_plan
-    if: steps.plan.outcome == 'success' && steps.apply.outcome == 'success'
-    uses: mshick/add-pr-comment@v2
+  - id: post_apply
+    if: inputs.ACTION == 'apply'
+    uses: peter-evans/create-or-update-comment@v2
     with:
-      repo-token: ${{ inputs.GITHUB_TOKEN }}
-      repo-token-user-login: 'github-actions[bot]'
-      message: |
-        Applying **${{ inputs.directory }}**:
-        ```diff
-        ${{ env.PLAN }}
-        ```
+      token: ${{ inputs.GITHUB_TOKEN }}
+      issue-number: ${{ inputs.ISSUE_NUMBER }}
+      body: |
+        Applying: **${{ inputs.directory }}**:
 
         ```
         ${{ steps.apply.outputs.stdout }}
         ```
 
   - if: steps.plan.outcome == 'failure' && inputs.ACTION == 'apply'
-    uses: mshick/add-pr-comment@v2
+    uses: peter-evans/create-or-update-comment@v2
     with:
-      repo-token: ${{ inputs.GITHUB_TOKEN }}
-      repo-token-user-login: 'github-actions[bot]'
-      message: |
+      token: ${{ inputs.GITHUB_TOKEN }}
+      issue-number: ${{ inputs.ISSUE_NUMBER }}
+      body: |
         Plan failed for **${{ inputs.directory }}**:
         ```
         ${{ steps.plan.outputs.stderr }}
-        ```
-      run: exit 1
-      shell: bash
+        ```   
 
   - if: steps.apply.outcome == 'failure' 
-    uses: mshick/add-pr-comment@v2
+    uses: peter-evans/create-or-update-comment@v2
     with:
-      repo-token: ${{ inputs.GITHUB_TOKEN }}
-      repo-token-user-login: 'github-actions[bot]'
-      message: |
+      token: ${{ inputs.GITHUB_TOKEN }}
+      issue-number: ${{ inputs.ISSUE_NUMBER }}
+      body: |
         Apply failed for **${{ inputs.directory }}**:
         ```
-        ${{ steps.apply.outputs.stderr }}
-        ```
-      run: exit 1
-      shell: bash
+        ${{ steps.plan.outputs.stderr }}
+        ```   
