@@ -118,12 +118,12 @@ runs:
     with:
       token: ${{ inputs.GITHUB_TOKEN }}
       issue-number: ${{ inputs.ISSUE_NUMBER }}
-          body: |
-             Applying: **${{ inputs.directory }}**:
+      body: |
+          Applying: **${{ inputs.directory }}**:
 
-             ```
-             ${{ steps.apply.outputs.stdout }}
-             ```
+          ```
+          ${{ steps.apply.outputs.stdout }}
+          ```
 
   - uses: peter-evans/create-or-update-comment@v3
     id: post_plan_failure
