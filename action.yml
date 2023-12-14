@@ -117,7 +117,6 @@ runs:
       repo-token-user-login: 'github-actions[bot]'
       message: |
         Applying **${{ inputs.directory }}**:
-
         ```diff
         ${{ env.PLAN }}
         ```
@@ -133,7 +132,6 @@ runs:
       repo-token-user-login: 'github-actions[bot]'
       message: |
         Plan failed for **${{ inputs.directory }}**:
-
         ```
         ${{ steps.plan.outputs.stderr }}
         ```
@@ -147,7 +145,6 @@ runs:
       repo-token-user-login: 'github-actions[bot]'
       message: |
         Apply failed for **${{ inputs.directory }}**:
-
         ```
         ${{ steps.apply.outputs.stderr }}
         ```
