@@ -5,9 +5,6 @@ inputs:
   ACTION:
     description: 'Action to run'
     required: true
-  ISSUE_NUMBER:
-    description: 'Issue Number'
-    required: true
   TERRAFORM_VERSION:
     description: 'Terraform Version'
     required: true
@@ -80,27 +77,8 @@ runs:
 
   - run: |
       echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
-      | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > plan.txt
+      | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > ${{ inputs.DIRECTORY }}/plan.txt
     shell: bash
-
-  - run: |
-      PLAN=$(cat plan.txt)
-      echo "PLAN<<EOF" >> $GITHUB_ENV
-      echo "$PLAN" >> $GITHUB_ENV
-      echo "EOF" >> $GITHUB_ENV
-    shell: bash
-
-  - uses: peter-evans/create-or-update-comment@v2
-    id: post_plan
-    if: inputs.ACTION == 'plan'
-    with:
-      token: ${{ inputs.GITHUB_TOKEN }}
-      issue-number: ${{ inputs.ISSUE_NUMBER }}
-      body: |
-        Plan: **${{ inputs.directory }}**:
-        ```diff
-        ${{ env.PLAN }}
-        ```
 
   - id: apply
     if: inputs.ACTION == 'apply'
@@ -112,39 +90,8 @@ runs:
         tfplan
     shell: bash
 
-  - uses: peter-evans/create-or-update-comment@v2
-    id: post_apply
-    if: inputs.ACTION == 'apply'
+  - id: save_plan
+    uses: actions/upload-artifact@v3
     with:
-      token: ${{ inputs.GITHUB_TOKEN }}
-      issue-number: ${{ inputs.ISSUE_NUMBER }}
-      body: |
-          Applying: **${{ inputs.directory }}**:
-
-          ```
-          ${{ steps.apply.outputs.stdout }}
-          ```
-
-  - uses: peter-evans/create-or-update-comment@v2
-    id: post_plan_failure
-    if: steps.plan.outcome == 'failure' && inputs.ACTION == 'apply'
-    with:
-      token: ${{ inputs.GITHUB_TOKEN }}
-      issue-number: ${{ inputs.ISSUE_NUMBER }}
-      body: |
-        Plan failed for **${{ inputs.directory }}**:
-        ```
-        ${{ steps.plan.outputs.stderr }}
-        ```   
-
-  - uses: peter-evans/create-or-update-comment@v2
-    id: post_apply_failure
-    if: steps.apply.outcome == 'failure' 
-    with:
-      token: ${{ inputs.GITHUB_TOKEN }}
-      issue-number: ${{ inputs.ISSUE_NUMBER }}
-      body: |
-        Apply failed for **${{ inputs.directory }}**:
-        ```
-        ${{ steps.plan.outputs.stderr }}
-        ```   
+      name: ${{ inputs.directory}}/plan.txt
+      path: '${{ github.workspace }}${{ inputs.DIRECTORY }}/${{ github.run_id }}.tfplan'
