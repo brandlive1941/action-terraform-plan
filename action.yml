@@ -87,7 +87,7 @@ runs:
       echo "EOF" >> $GITHUB_ENV
     shell: bash
 
-  - uses: mshick/add-pr-comment@v2.8.2
+  - uses: mshick/add-pr-comment@v2
     if: inputs.ACTION == 'plan'
     with:
       allow-repeats: true
@@ -111,7 +111,7 @@ runs:
 
   - id: post_plan
     if: steps.plan.outcome == 'success' && steps.apply.outcome == 'success'
-    uses: mshick/add-pr-comment@v2.8.2
+    uses: mshick/add-pr-comment@v2
     with:
       repo-token: ${{ inputs.GITHUB_TOKEN }}
       repo-token-user-login: 'github-actions[bot]'
@@ -126,7 +126,7 @@ runs:
         ```
 
   - if: steps.plan.outcome == 'failure' && inputs.ACTION == 'apply'
-    uses: mshick/add-pr-comment@v2.8.2
+    uses: mshick/add-pr-comment@v2
     with:
       repo-token: ${{ inputs.GITHUB_TOKEN }}
       repo-token-user-login: 'github-actions[bot]'
@@ -139,7 +139,7 @@ runs:
       shell: bash
 
   - if: steps.apply.outcome == 'failure' 
-    uses: mshick/add-pr-comment@v2.8.2
+    uses: mshick/add-pr-comment@v2
     with:
       repo-token: ${{ inputs.GITHUB_TOKEN }}
       repo-token-user-login: 'github-actions[bot]'
