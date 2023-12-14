@@ -90,8 +90,8 @@ runs:
       echo "EOF" >> $GITHUB_ENV
     shell: bash
 
-  - id: post_plan
-    uses: peter-evans/create-or-update-comment@v3
+  - uses: peter-evans/create-or-update-comment@v3
+    id: post_plan
     if: inputs.ACTION == 'plan'
     with:
       token: ${{ inputs.GITHUB_TOKEN }}
@@ -112,21 +112,22 @@ runs:
         tfplan
     shell: bash
 
-  - id: post_apply
+  - uses: peter-evans/create-or-update-comment@v3
+    id: post_apply
     if: inputs.ACTION == 'apply'
-    uses: peter-evans/create-or-update-comment@v3
     with:
       token: ${{ inputs.GITHUB_TOKEN }}
       issue-number: ${{ inputs.ISSUE_NUMBER }}
-      body: |
-        Applying: **${{ inputs.directory }}**:
+          body: |
+             Applying: **${{ inputs.directory }}**:
 
-        ```
-        ${{ steps.apply.outputs.stdout }}
-        ```
+             ```
+             ${{ steps.apply.outputs.stdout }}
+             ```
 
-  - if: steps.plan.outcome == 'failure' && inputs.ACTION == 'apply'
-    uses: peter-evans/create-or-update-comment@v3
+  - uses: peter-evans/create-or-update-comment@v3
+    id: post_plan_failure
+    if: steps.plan.outcome == 'failure' && inputs.ACTION == 'apply'
     with:
       token: ${{ inputs.GITHUB_TOKEN }}
       issue-number: ${{ inputs.ISSUE_NUMBER }}
@@ -136,8 +137,9 @@ runs:
         ${{ steps.plan.outputs.stderr }}
         ```   
 
-  - if: steps.apply.outcome == 'failure' 
-    uses: peter-evans/create-or-update-comment@v3
+  - uses: peter-evans/create-or-update-comment@v3
+    id: post_apply_failure
+    if: steps.apply.outcome == 'failure' 
     with:
       token: ${{ inputs.GITHUB_TOKEN }}
       issue-number: ${{ inputs.ISSUE_NUMBER }}
