@@ -93,5 +93,5 @@ runs:
   - id: save_plan
     uses: actions/upload-artifact@v3
     with:
-      name: ${{ inputs.directory}}/plan.txt
-      path: '${{ github.workspace }}${{ inputs.DIRECTORY }}/${{ github.run_id }}.tfplan'
+      name: ${{ github.run_id }}.tfplan
+      path: '${{ github.workspace }}${{ inputs.DIRECTORY }}'
