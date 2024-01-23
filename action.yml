@@ -97,8 +97,9 @@ runs:
     shell: bash
 
   - run: |
+      echo -e '## ${{ inputs.DIRECTORY }} plan\n' > ${{ inputs.DIRECTORY }}/plan.txt
       echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
-      | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > ${{ inputs.DIRECTORY }}/plan.txt
+      | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' >> ${{ inputs.DIRECTORY }}/plan.txt
     shell: bash
 
   - id: apply
