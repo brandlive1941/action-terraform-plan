@@ -14,6 +14,9 @@ inputs:
   GITHUB_TOKEN: 
     description: 'Github Token'
     required: true
+  GITHUB_ISSUE:
+    description: 'Github Event'
+    required: true
   NPM_TOKEN: 
     description: 'NPM Token'
     required: true
@@ -85,16 +88,26 @@ runs:
       TF_VAR_DATADOG_API_KEY: ${{ inputs.DATADOG_API_KEY }}
       TF_VAR_DATADOG_APP_KEY: ${{ inputs.DATADOG_APP_KEY }}
     run: |
+      set +e
       cd ${{ inputs.directory }} && \
-      terraform plan -input=false -no-color -out=tfplan && \
+      terraform plan -input=false -no-color -detailed-exitcode -out=tfplan && \
+      exitcode=$?
       terraform show -no-color tfplan
+      if [[ $exitcode -eq 2 ]]; then
+        echo "change_detected=true" >> $GITHUB_OUTPUT
+        exit 0
+      else
+        echo "terraform plan failed"
+        exit $exitcode
+      fi
     shell: bash
 
-  - if: steps.plan.outcome == 'failure' && inputs.ACTION == 'plan'
-    run: |
-      echo "terraform plan failed"
-      exit 1
-    shell: bash
+  - uses: peter-evans/create-or-update-comment@v3 
+    if: steps.plan.outcome.change_detected == 'true' && inputs.ACTION == 'plan'
+    id: post_plan
+    with:
+      issue-number: ${{ inputs.GITHUB_ISSUE }}
+      body-path: ${{ inputs.directory }}/plan.txt
 
   - run: |
       echo -e '## ${{ inputs.DIRECTORY }} plan\n' > ${{ inputs.DIRECTORY }}/plan.txt
