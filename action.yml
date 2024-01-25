@@ -74,7 +74,6 @@ runs:
     shell: bash
 
   - id: plan
-    if: inputs.ACTION == 'plan'
     continue-on-error: true
     env:
       TERRAFORM_VERSION: ${{ inputs.TERRAFORM_VERSION }}
