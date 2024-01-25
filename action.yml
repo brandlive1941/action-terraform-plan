@@ -90,15 +90,27 @@ runs:
     run: |
       set +e
       cd ${{ inputs.directory }} && \
-      terraform plan -input=false -no-color -detailed-exitcode -out=tfplan
-      exitcode=$?
-      echo "terraform exit code = $exitcode" 
+      terraform plan -input=false -no-color -out=tfplan
       terraform show -no-color tfplan
-      if [[ $exitcode -eq 2 ]]; then
-        echo "change_detected=true" >> $GITHUB_OUTPUT
+    shell: bash
+
+  - name: verify terraform plan
+    if: steps.plan.outcome == 'failure'
+    run: |
+      echo "terraform plan failed"
+      exit 1
+    shell: bash
+
+  - id: format_plan
+    run: |
+      echo -e '## ${{ inputs.DIRECTORY }} plan\n' > ${{ inputs.DIRECTORY }}/plan.txt
+      echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
+      | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' >> ${{ inputs.DIRECTORY }}/plan.txt
+      if grep -Fxq "No changes. Your infrastructure matches the configuration." ${{ inputs.DIRECTORY }}/plan.txt
+      then
+          echo "change_detected=false" >> $GITHUB_OUTPUT
       else
-        echo "terraform plan failed"
-        exit $exitcode
+          echo "change_detected=true" >> $GITHUB_OUTPUT
       fi
     shell: bash
 
@@ -108,12 +120,9 @@ runs:
     with:
       issue-number: ${{ inputs.GITHUB_ISSUE }}
       body-path: ${{ inputs.directory }}/plan.txt
-
-  - run: |
-      echo -e '## ${{ inputs.DIRECTORY }} plan\n' > ${{ inputs.DIRECTORY }}/plan.txt
-      echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
-      | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' >> ${{ inputs.DIRECTORY }}/plan.txt
-    shell: bash
+            #       ## ${{ env.AWS_ACCOUNT_NAME }} plan
+            # ```diff
+            # ${{ env.PLAN }}
 
   - id: apply
     if: inputs.ACTION == 'apply'
