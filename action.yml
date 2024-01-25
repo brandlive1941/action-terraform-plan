@@ -118,8 +118,3 @@ runs:
       exit 1
     shell: bash
 
-  - id: save_plan
-    uses: actions/upload-artifact@v3
-    with:
-      name: ${{ github.run_id }}.tfplan
-      path: '${{ github.workspace }}${{ inputs.DIRECTORY }}'
