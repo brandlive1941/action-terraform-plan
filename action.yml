@@ -92,6 +92,7 @@ runs:
 
   - if: steps.plan.outcome == 'failure' && inputs.ACTION == 'plan'
     run: |
+      echo "terraform plan failed"
       exit 1
     shell: bash
 
@@ -109,6 +110,12 @@ runs:
         -input=false \
         -no-color \
         tfplan
+    shell: bash
+
+  - if: steps.apply.outcome == 'failure' 
+    run: |
+      echo "terraform apply failed"
+      exit 1
     shell: bash
 
   - id: save_plan
