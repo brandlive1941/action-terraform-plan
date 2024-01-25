@@ -90,9 +90,8 @@ runs:
     run: |
       set +e
       cd ${{ inputs.directory }} && \
-      terraform plan -input=false -no-color -detailed-exitcode -out=tfplan
-      exitcode=$?
-      echo "exitcode=$exitcode" 
+      terraform plan -input=false -no-color -detailed-exitcode -out=tfplan || export exitcode=$?
+      echo "terraform exit code=$exitcode" 
       terraform show -no-color tfplan
       if [[ $exitcode -eq 2 ]]; then
         echo "change_detected=true" >> $GITHUB_OUTPUT
