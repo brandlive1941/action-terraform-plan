@@ -95,7 +95,6 @@ runs:
       terraform show -no-color tfplan
       if [[ $exitcode -eq 2 ]]; then
         echo "change_detected=true" >> $GITHUB_OUTPUT
-        exit 0
       else
         echo "terraform plan failed"
         exit $exitcode
