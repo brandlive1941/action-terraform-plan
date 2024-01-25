@@ -90,7 +90,7 @@ runs:
     run: |
       set +e
       cd ${{ inputs.directory }} && \
-      terraform plan -input=false -no-color -detailed-exitcode -out=tfplan && \
+      terraform plan -input=false -no-color -detailed-exitcode -out=tfplan
       exitcode=$?
       terraform show -no-color tfplan
       if [[ $exitcode -eq 2 ]]; then
