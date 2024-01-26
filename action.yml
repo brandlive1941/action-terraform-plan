@@ -126,7 +126,11 @@ runs:
       allow-repeats: true
       repo-token: ${{ inputs.GITHUB_TOKEN }}
       repo-token-user-login: 'github-actions[bot]'
-      message-path: ${{ steps.format_plan.outputs.plan }}
+      message: |
+            ## ${{ inputs.DIRECTORY }} plan
+            ```diff
+            ${{ steps.format_plan.outputs.plan }}
+            ```
 
   - id: apply
     if: inputs.ACTION == 'apply'
