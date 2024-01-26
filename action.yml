@@ -130,7 +130,7 @@ runs:
     id: post_plan
     with:
       allow-repeats: true
-      repo-token: ${{ secrets.GITHUB_TOKEN }}
+      repo-token: ${{ inputs.GITHUB_TOKEN }}
       repo-token-user-login: 'github-actions[bot]'
       message-path: ${{ inputs.directory }}/plan.txt
 
