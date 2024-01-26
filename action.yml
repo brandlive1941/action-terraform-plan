@@ -101,7 +101,7 @@ runs:
       exit 1
     shell: bash
 
-  - id: format_plan
+  - id: plan_output
     if: inputs.ACTION == 'plan'
     run: |
       echo -e '## ${{ inputs.DIRECTORY }} plan\n' > ${{ inputs.DIRECTORY }}/plan.txt
@@ -111,16 +111,20 @@ runs:
       echo "PLAN<<EOF" >> $GITHUB_OUTPUT
       echo "$PLAN" >> $GITHUB_OUTPUT
       echo "EOF" >> $GITHUB_OUTPUT
+      
+  - id: plan_delta
+    if: inputs.ACTION == 'plan'
+    run: |
       if grep -Fxq "No changes. Your infrastructure matches the configuration." ${{ inputs.DIRECTORY }}/plan.txt
       then
-          echo "change_detected=false" >> $GITHUB_OUTPUT
+          echo "post_plan=false" >> $GITHUB_OUTPUT
       else
-          echo "change_detected=true" >> $GITHUB_OUTPUT
+          echo "post_plan=true" >> $GITHUB_OUTPUT
       fi
     shell: bash
 
   - uses: mshick/add-pr-comment@v2
-    if: steps.format_plan.outputs.change_detected == 'true'
+    if: steps.plan_delta.outputs.post_plan == 'true'
     id: post_plan
     with:
       allow-repeats: true
@@ -129,7 +133,7 @@ runs:
       message: |
             ## ${{ inputs.DIRECTORY }} plan
             ```diff
-            ${{ steps.format_plan.outputs.plan }}
+            ${{ steps.plan_output.outputs.plan }}
             ```
 
   - id: apply
