@@ -116,7 +116,7 @@ runs:
     shell: bash
 
   - uses: peter-evans/create-or-update-comment@v3 
-    if: steps.format_plan.outcome.change_detected == 'true' && inputs.ACTION == 'plan'
+    if: steps.format_plan.outputs.change_detected == 'true'
     id: post_plan
     with:
       issue-number: ${{ inputs.GITHUB_ISSUE }}
