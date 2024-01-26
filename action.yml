@@ -107,6 +107,10 @@ runs:
       echo -e '## ${{ inputs.DIRECTORY }} plan\n' > ${{ inputs.DIRECTORY }}/plan.txt
       echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
       | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' >> ${{ inputs.DIRECTORY }}/plan.txt
+      PLAN=$(cat ${{ inputs.DIRECTORY }}/plan.txt)
+      echo "PLAN<<EOF" >> $GITHUB_OUTPUT
+      echo "$PLAN" >> $GITHUB_OUTPUT
+      echo "EOF" >> $GITHUB_OUTPUT
       if grep -Fxq "No changes. Your infrastructure matches the configuration." ${{ inputs.DIRECTORY }}/plan.txt
       then
           echo "change_detected=false" >> $GITHUB_OUTPUT
@@ -115,16 +119,6 @@ runs:
       fi
     shell: bash
 
-  # - uses: peter-evans/create-or-update-comment@v3 
-  #   if: steps.format_plan.outputs.change_detected == 'true'
-  #   id: post_plan
-  #   with:
-  #     issue-number: ${{ inputs.GITHUB_ISSUE }}
-  #     body-path: ${{ inputs.directory }}/plan.txt
-  #           #       ## ${{ env.AWS_ACCOUNT_NAME }} plan
-  #           # ```diff
-  #           # ${{ env.PLAN }}
-
   - uses: mshick/add-pr-comment@v2
     if: steps.format_plan.outputs.change_detected == 'true'
     id: post_plan
@@ -132,7 +126,7 @@ runs:
       allow-repeats: true
       repo-token: ${{ inputs.GITHUB_TOKEN }}
       repo-token-user-login: 'github-actions[bot]'
-      message-path: ${{ inputs.directory }}/plan.txt
+      message-path: ${{ steps.format_plan.outputs.plan }}
 
   - id: apply
     if: inputs.ACTION == 'apply'
