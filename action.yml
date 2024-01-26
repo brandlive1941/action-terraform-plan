@@ -115,15 +115,23 @@ runs:
       fi
     shell: bash
 
-  - uses: peter-evans/create-or-update-comment@v3 
-    if: steps.format_plan.outputs.change_detected == 'true'
-    id: post_plan
+  # - uses: peter-evans/create-or-update-comment@v3 
+  #   if: steps.format_plan.outputs.change_detected == 'true'
+  #   id: post_plan
+  #   with:
+  #     issue-number: ${{ inputs.GITHUB_ISSUE }}
+  #     body-path: ${{ inputs.directory }}/plan.txt
+  #           #       ## ${{ env.AWS_ACCOUNT_NAME }} plan
+  #           # ```diff
+  #           # ${{ env.PLAN }}
+
+  - name: Post Plan to GitHub PR
+    uses: mshick/add-pr-comment@v2
     with:
-      issue-number: ${{ inputs.GITHUB_ISSUE }}
-      body-path: ${{ inputs.directory }}/plan.txt
-            #       ## ${{ env.AWS_ACCOUNT_NAME }} plan
-            # ```diff
-            # ${{ env.PLAN }}
+      allow-repeats: true
+      repo-token: ${{ secrets.GITHUB_TOKEN }}
+      repo-token-user-login: 'github-actions[bot]'
+      message-path: ${{ inputs.directory }}/plan.txt
 
   - id: apply
     if: inputs.ACTION == 'apply'
