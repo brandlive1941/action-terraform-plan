@@ -102,6 +102,7 @@ runs:
     shell: bash
 
   - id: format_plan
+    if: inputs.ACTION == 'plan'
     run: |
       echo -e '## ${{ inputs.DIRECTORY }} plan\n' > ${{ inputs.DIRECTORY }}/plan.txt
       echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
