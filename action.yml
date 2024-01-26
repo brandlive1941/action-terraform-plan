@@ -111,6 +111,7 @@ runs:
       echo "PLAN<<EOF" >> $GITHUB_OUTPUT
       echo "$PLAN" >> $GITHUB_OUTPUT
       echo "EOF" >> $GITHUB_OUTPUT
+    shell: bash
       
   - id: plan_delta
     if: inputs.ACTION == 'plan'
