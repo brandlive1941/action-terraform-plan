@@ -131,7 +131,7 @@ runs:
       repo-token: ${{ inputs.GITHUB_TOKEN }}
       repo-token-user-login: 'github-actions[bot]'
       message: |
-            ## ${{ inputs.DIRECTORY }} plan
+            ## ${{ inputs.DIRECTORY }}
             ```diff
             ${{ steps.plan_output.outputs.plan }}
             ```
