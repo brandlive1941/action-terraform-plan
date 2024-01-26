@@ -125,8 +125,9 @@ runs:
   #           # ```diff
   #           # ${{ env.PLAN }}
 
-  - name: Post Plan to GitHub PR
+  - name: post plan to github pull request
     uses: mshick/add-pr-comment@v2
+    if: steps.format_plan.outputs.change_detected == 'true'
     with:
       allow-repeats: true
       repo-token: ${{ secrets.GITHUB_TOKEN }}
