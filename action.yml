@@ -20,6 +20,9 @@ inputs:
   GITHUB_REPOSITORY:
     description: 'Github Repository'
     required: false
+  GITHUB_SHA:
+    description: 'Github SHA'
+    required: false
   GITHUB_ISSUE:
     description: 'Github Event'
     required: true
@@ -90,7 +93,7 @@ runs:
       TF_VAR_ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
       TF_VAR_GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
       TF_VAR_GITHUB_REPOSITORY: ${{ inputs.GITHUB_REPOSITORY }}
-      TF_VAR_GITHUB_REPOSITORY_OWNER: ${{ inputs.GITHUB_REPOSITORY_OWNER }}
+      TV_VAR_GITHUB_SHA: ${{ inputs.GITHUB_SHA }}
       TF_VAR_NPM_TOKEN: ${{ inputs.NPM_TOKEN }}
       TF_VAR_GITHUB_APP_CLOUDBUILD_INSTALLATION_ID: ${{ inputs.GITHUB_APP_CLOUDBUILD_INSTALLATION_ID }}
       TF_VAR_CLOUDFLARE_API_TOKEN: ${{ inputs.CLOUDFLARE_API_TOKEN }}
