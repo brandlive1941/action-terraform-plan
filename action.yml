@@ -11,12 +11,15 @@ inputs:
   PROJECT_ID: 
     description: 'Project ID'
     required: true
-  ENVIRONMENT: 
-    description: 'Environment'
-    required: false
+  DIRECTORY: 
+    description: 'Directory to run Terraform in'
+    required: true
   GITHUB_TOKEN: 
     description: 'Github Token'
     required: true
+  ENVIRONMENT: 
+    description: 'Environment'
+    required: false
   GITHUB_REPOSITORY:
     description: 'Github Repository'
     required: false
@@ -28,22 +31,19 @@ inputs:
     required: false
   NPM_TOKEN: 
     description: 'NPM Token'
-    required: true
+    required: false
   GITHUB_APP_CLOUDBUILD_INSTALLATION_ID: 
     description: 'Github App Cloud Build Installation ID'
-    required: true
+    required: false
   CLOUDFLARE_API_TOKEN: 
     description: 'Cloudflare API Token'
-    required: true
+    required: false
   DATADOG_API_KEY: 
     description: 'Datadog API Key'
-    required: true
+    required: false
   DATADOG_APP_KEY: 
     description: 'Datadog App Key'
-    required: true
-  DIRECTORY: 
-    description: 'Directory to run Terraform in'
-    required: true
+    required: false
 
 runs:
   using: "composite"
