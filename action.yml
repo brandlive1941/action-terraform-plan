@@ -1,5 +1,5 @@
 name: 'Terraform Actions Collection'
-description: 'Run actions for Terraform Project'
+description: 'Terraform Actions Collection for Github'
 author: 'drew.mercer'
 inputs:
   ACTION:
@@ -7,9 +7,6 @@ inputs:
     required: true
   TERRAFORM_VERSION:
     description: 'Terraform Version'
-    required: true
-  PROJECT_ID: 
-    description: 'Project ID'
     required: true
   DIRECTORY: 
     description: 'Directory to run Terraform in'
@@ -89,7 +86,6 @@ runs:
     continue-on-error: true
     env:
       TERRAFORM_VERSION: ${{ inputs.TERRAFORM_VERSION }}
-      TF_VAR_PROJECT_ID: ${{ inputs.PROJECT_ID }}
       TF_VAR_ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
       TF_VAR_GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
       TF_VAR_GITHUB_REPOSITORY: ${{ inputs.GITHUB_REPOSITORY }}
