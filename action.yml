@@ -44,6 +44,9 @@ inputs:
   DATADOG_PRINCIPAL_ACCOUNT:
     description: 'Datadog Principal Account'
     required: false
+  ARGS: 
+    description: 'Terraform Args'
+    required: false
 
 runs:
   using: "composite"
@@ -102,7 +105,7 @@ runs:
     run: |
       set +e
       cd ${{ inputs.directory }} && \
-      terraform plan -input=false -no-color -out=tfplan
+      terraform plan -input=false -no-color -out=tfplan ${{ inputs.ARGS }}
       terraform show -no-color tfplan
     shell: bash
 
